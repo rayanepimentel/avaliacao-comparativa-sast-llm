@@ -14,7 +14,7 @@
 ├── dataset/
 │   ├── code_snippets/                # Trechos de código analisados (15 arquivos .ts)
 │   ├── juice_shop_15_files.csv       # Metadados das análises e ground truth
-├── results/                          # Resultados gerados (pasta vazia inicialmente)
+├── results/                          # Armazena os resultados gerados pelos experimentos. Esta pasta inicia vazia e é preenchida pelos scripts.
 ├── scripts/
 │   ├── calculate_metrics.py          # Gera a Tabela 2 do artigo
 │   ├── llm_calculate_metrics.py      # Gera calculo de métricas LLMs
