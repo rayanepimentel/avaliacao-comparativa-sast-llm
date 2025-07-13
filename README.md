@@ -12,7 +12,7 @@
 │   ├── semgrep.yml
 │   └── sonarqube.yml
 ├── dataset/
-│   ├── code_snippets/                # Trechos de código analisados (15 arquivos .js/.ts)
+│   ├── code_snippets/                # Trechos de código analisados (15 arquivos .ts)
 │   ├── juice_shop_15_files.csv       # Metadados das análises e ground truth
 ├── results/                          # Resultados gerados (pasta vazia inicialmente)
 ├── scripts/
@@ -30,7 +30,7 @@ Os selos considerados para este artefato são:
   * **Artefatos Disponíveis (Selo D):** O código-fonte, os scripts de automação e os dados (dataset de arquivos e ground truth) estão publicados em um repositório público no GitHub.
   * **Artefatos Funcionais (Selo F):** O artefato inclui instruções claras e scripts para a instalação e execução das ferramentas, permitindo que o revisor observe as funcionalidades de análise de vulnerabilidades tanto das ferramentas SAST quanto dos LLMs. Um teste mínimo com saída esperada é fornecido.
   * **Artefatos Sustentáveis (Selo S):** As dependências são versionadas através de `requirements.txt`, o ambiente é documentado, e a estrutura do código é organizada para facilitar a compreensão e manutenção.
-  * **Experimentos Reprodutíveis (Selo R):** Os experimentos, incluindo o cálculo das métricas comparativas e a demonstração da análise de LLMs, podem ser reproduzidos a partir de instruções passo a passo e scripts, com a indicação das saídas esperadas.
+  * **Experimentos Reprodutíveis (Selo R):** Os experimentos, incluindo o cálculo das métricas comparativas e a demonstração da análise de LLMs e SASTs, podem ser reproduzidos a partir de instruções passo a passo e scripts, com a indicação das saídas esperadas.
 
 ## Informações básicas
 
