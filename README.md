@@ -94,8 +94,6 @@ Resultados de modelos generativos (DeepSeek/CodeLlama) **podem variar entre exec
 - Limitações de janela de contexto
 - Variações na inicialização de pesos
 
-Para comparativos acadêmicos, em [Reivindicação #1](#reivindicação-1-análise-de-desempenho-de-llms-com-validação-de-categoria) execute o script `run_llm_analysis.py` **3 vezes** e utilize a mediana dos resultados. Necessário salvar o resultado antes de rodar o script novamente.
-
 ## Instalação
 
 Siga os passos abaixo para configurar o ambiente e as ferramentas:
