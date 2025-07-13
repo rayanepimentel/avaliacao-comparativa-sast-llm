@@ -3,7 +3,7 @@
 
 **Artigo:** "Avaliação Comparativa do desempenho de inteligências artificiais generativas e ferramentas tradicionais na análise de código-fonte JavaScript"
 
-**Resumo do Artefato:** Este artefato implementa uma comparação sistemática do desempenho de inteligências artificiais generativas e ferramentas tradicionais na análise de código-fonte JavaScript. Ele permite a replicação dos experimentos que avaliaram ferramentas SAST (Semgrep/SonarQube) e modelos Large Language Models (LLMs) como DeepSeek e CodeLlama na detecção de vulnerabilidades JavaScript utilizando o OWASP Juice Shop como dataset. [cite\_start]O estudo revela que as ferramentas SAST alcançam 100% de precisão para vulnerabilidades padrão (XSS/SQLi) [cite: 6, 11][cite\_start], enquanto os LLMs oferecem maior recall (70% no DeepSeek) para ameaças contextuais (NoSQLi/controle de acesso quebrado) [cite: 6, 11][cite\_start], demonstrando a complementaridade entre as abordagens[cite: 6, 11].
+**Resumo do Artefato:** Este artefato implementa uma comparação sistemática do desempenho de inteligências artificiais generativas e ferramentas tradicionais na análise de código-fonte JavaScript. Ele permite a replicação dos experimentos que avaliaram ferramentas SAST (Semgrep/SonarQube) e modelos Large Language Models (LLMs) como DeepSeek e CodeLlama na detecção de vulnerabilidades JavaScript utilizando o OWASP Juice Shop como dataset. O estudo revela que as ferramentas SAST alcançam 100% de precisão para vulnerabilidades padrão (XSS/SQLi) , enquanto os LLMs oferecem maior recall (70% no DeepSeek) para ameaças contextuais (NoSQLi/controle de acesso quebrado), demonstrando a complementaridade entre as abordagens.
 
 ## Estrutura do readme.md
 
@@ -75,7 +75,7 @@ ollama>=0.5.1 # Versão utilizada no desenvolvimento
 ## Dataset Base
 
   * **OWASP Juice Shop v17.3.0:** O artefato utiliza um subconjunto de 15 arquivos desta aplicação web intencionalmente vulnerável.
-  * **Arquivos de código-fonte:** Localizados em `dataset/code_snippets/`. Estes arquivos incluem exemplos vulneráveis e seguros, alguns dos quais foram pré-processados (remoção de comentários de desafio) para a análise dos LLMs, conforme descrito no artigo[cite: 119, 120].
+  * **Arquivos de código-fonte:** Localizados em `dataset/code_snippets/`. Estes arquivos incluem exemplos vulneráveis e seguros, alguns dos quais foram pré-processados (remoção de comentários de desafio) para a análise dos LLMs, conforme descrito no artigo.
   * **Ground Truth:** O arquivo `dataset/juice_shop_ground_truth.csv` contém o mapeamento das vulnerabilidades conhecidas para cada arquivo, servindo como a "verdade" para o cálculo das métricas de desempenho.
 
 ## Preocupações com segurança
