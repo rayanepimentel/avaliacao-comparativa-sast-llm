@@ -17,6 +17,7 @@
 ├── results/                          # Resultados gerados (pasta vazia inicialmente)
 ├── scripts/
 │   ├── calculate_metrics.py          # Gera a Tabela 2 do artigo
+│   ├── llm_calculate_metrics.py      # Gera calculo de métricas LLMs
 │   ├── requirements.txt              # Dependências Python
 │   ├── run_llm_analysis.py           # Executa análise com LLMs
 │   ├── setup_models.sh               # Instala Ollama + modelos
