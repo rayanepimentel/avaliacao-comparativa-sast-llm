@@ -285,8 +285,8 @@ Este processo demonstra como as análises SAST foram integradas e executadas no 
 
       * No seu fork do `juice-shop` no GitHub, vá para a aba **Actions**.
       * No painel lateral esquerdo, selecione os workflows:
-          * **Semgrep PR** (nome definido no `semgrep.yml`): Clique em "Run workflow" e selecione o branch principal (geralmente `main`).
-          * **Sonar** (nome definido no `sonarqube.yml`): Clique em "Run workflow" e selecione o branch principal (geralmente `main`).
+          * **Semgrep PR** (nome definido no `semgrep.yml`): Clique em "Run workflow" e selecione o branch principal (ou o branch que você adicionou os arquivos `.yml`).
+          * **Sonar** (nome definido no `sonarqube.yml`): Clique em "Run workflow" e selecione o branch principal (ou o branch que você adicionou os arquivos `.yml`).
 
 5.  **Obtenha os resultados**:
 
