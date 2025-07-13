@@ -304,7 +304,7 @@ Este processo demonstra como as análises SAST foram integradas e executadas no 
 
 MIT License
 
-Copyright (c) 2025 Rayane Pimentel e Claudia Bianchi Progetti
+Copyright (c) 2025
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
