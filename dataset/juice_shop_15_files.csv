@@ -1,0 +1,20 @@
+ID,Vulnerability,File,Line,Detected_Semgrep,Detected_Sonar,Detected_Deepseek,Detected_CodeLlama,Is_Vulnerable
+VULN-01,XSS,"frontend/src/app/search-result/
+search-result.component.ts",151 - 173 ,TRUE,TRUE,TRUE,TRUE,TRUE
+VULN-02,Injection,routes/login.ts,34,TRUE,FALSE,TRUE,TRUE,TRUE
+VULN-03,Injection,routes/search.ts,23,TRUE,FALSE,TRUE,TRUE,TRUE
+VULN-04,NoSQL Injection,routes/updateProductReviews.ts,13 - 32,FALSE,FALSE,TRUE,FALSE,TRUE
+VULN-05,"Broken Access 
+Control ",frontend/src/app/app.routing.ts,60 - 65,FALSE,FALSE,FALSE,FALSE,TRUE
+VULN-06,"Sensitive Data 
+Exposure",server.ts,266 - 268,TRUE,FALSE,TRUE,FALSE,TRUE
+VULN-07,SSRF,routes/profileImageUrlUpload.ts,24 - 30,TRUE,FALSE,FALSE,TRUE,TRUE
+VULN-08,CSRF,routes/updateUserProfile.ts,36,FALSE,FALSE,FALSE,TRUE,TRUE
+VULN-09,"Broken Access 
+Control",routes/basketItems,37,FALSE,FALSE,TRUE,TRUE,TRUE
+VULN-10,Validação insuficiente, routes/deluxe.ts,,FALSE,FALSE,TRUE,FALSE,TRUE
+SAFE-01,Safe,data/static/codefixes/unionSqlInjectionChallenge_2_correct.ts,,FALSE,FALSE,TRUE,TRUE,FALSE
+SAFE-02,Safe,data/static/codefixes/tokenSaleChallenge_3_correct.ts,,FALSE,FALSE,FALSE,TRUE,FALSE
+SAFE-03,Safe,data/static/codefixes/accessLogDisclosureChallenge_1_correct.ts,,FALSE,FALSE,TRUE,TRUE,FALSE
+SAFE-04,Safe,data/static/codefixes/adminSectionChallenge_1_correct.ts,,FALSE,FALSE,FALSE,TRUE,FALSE
+SAFE-05,Safe,data/static/codefixes/dbSchemaChallenge_2_correct.ts,,FALSE,FALSE,FALSE,TRUE,FALSE

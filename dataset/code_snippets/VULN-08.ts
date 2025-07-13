@@ -1,0 +1,7 @@
+  const savedUser = await user.update({ username: req.body.username })
+     const userWithStatus = utils.queryResultToJson(savedUser)
+     const updatedToken = security.authorize(userWithStatus)
+     security.authenticatedUsers.put(updatedToken, userWithStatus)
+     res.cookie('token', updatedToken)
+     res.location(process.env.BASE_PATH + '/profile')
+     res.redirect(process.env.BASE_PATH + '/profile')

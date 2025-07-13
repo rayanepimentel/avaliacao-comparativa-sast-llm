@@ -1,0 +1,42 @@
+name: SAST SonarQube
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sonarqube:
+    runs-on: ubuntu-latest
+    services:
+      sonarqube:
+        image: sonarqube:25.5-community
+        ports:
+          - "9000:9000"
+          
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Wait for SonarQube
+      run: sleep 120
+      
+    - name: Scan dataset snippets
+      uses: SonarSource/sonarqube-scan-action@v5
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: "http://localhost:9000"
+      with:
+        projectBaseDir: dataset/code_snippets
+        args: >
+          -Dsonar.projectKey=juice-shop-snippets
+          -Dsonar.sources=.
+          -Dsonar.exclusions=**/node_modules/**,**/dist/**
+          
+    - name: Export findings
+      run: |
+        # Obter resultados da análise
+        curl -u admin:admin "http://localhost:9000/api/issues/search?componentKeys=juice-shop-snippets" > results/sonar-results.json
+        
+    - name: Upload results
+      uses: actions/upload-artifact@v3
+      with:
+        name: sonarqube-results
+        path: results/sonar-results.json

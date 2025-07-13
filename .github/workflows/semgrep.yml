@@ -1,0 +1,26 @@
+name: SAST Semgrep
+
+on:
+  workflow_dispatch:
+
+jobs:
+  semgrep:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run Semgrep on dataset snippets
+      run: |
+        # Analisar apenas a pasta com os snippets
+        semgrep --config "p/owasp-top-ten" \
+          dataset/code_snippets/ \
+          --json > results/semgrep-results.json
+          
+        # Contar detecções (para validação)
+        echo "Vulnerabilities found: $(jq '.results | length' results/semgrep-results.json)"
+        
+    - name: Upload results
+      uses: actions/upload-artifact@v3
+      with:
+        name: semgrep-results
+        path: results/semgrep-results.json
