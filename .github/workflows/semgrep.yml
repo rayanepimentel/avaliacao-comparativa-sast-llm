@@ -1,26 +1,65 @@
-name: SAST Semgrep
+name: Semgrep PR
 
 on:
-  workflow_dispatch:
+ workflow_dispatch:
+
 
 jobs:
   semgrep:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Run Semgrep on dataset snippets
-      run: |
-        # Analisar apenas a pasta com os snippets
-        semgrep --config "p/owasp-top-ten" \
-          dataset/code_snippets/ \
-          --json > results/semgrep-results.json
-          
-        # Contar detecções (para validação)
-        echo "Vulnerabilities found: $(jq '.results | length' results/semgrep-results.json)"
-        
-    - name: Upload results
-      uses: actions/upload-artifact@v3
-      with:
-        name: semgrep-results
-        path: results/semgrep-results.json
+      - uses: actions/checkout@v4
+
+      - name: Setup Git identity
+        run: |
+          git config --global user.email "semgrep-bot@github.com"
+          git config --global user.name "semgrep-bot"
+
+      - name: Install Semgrep
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install semgrep
+
+      - name: Run Semgrep and save report
+        run: |
+          mkdir semgrep-output
+          semgrep --config "p/owasp-top-ten" \
+            server.ts \
+            frontend/src/app/app.routing.ts \
+            frontend/src/app/search-result/search-result.component.ts \
+            routes/login.ts \
+            routes/search.ts \
+            routes/updateProductReviews.ts \
+            data/static/codefixes/unionSqlInjectionChallenge_2_correct.ts  \
+            data/static/codefixes/tokenSaleChallenge_3_correct.ts \
+            data/static/codefixes/accessLogDisclosureChallenge_1_correct.ts \
+            data/static/codefixes/adminSectionChallenge_1_correct.ts \
+            data/static/codefixes/dbSchemaChallenge_2_correct.ts \
+            --json > semgrep-output/semgrep-report.json
+
+      - name: Convert JSON to Markdown
+        run: |
+          echo "# 🛡️ Semgrep OWASP Top 10 Report" > semgrep-output/semgrep-report.md
+          echo "" >> semgrep-output/semgrep-report.md
+          jq -r '.results[] | "- **File:** \(.path)\n  - **Line:** \(.start.line)\n  - **Rule:** \(.check_id)\n  - **Message:** \(.extra.message)\n"' semgrep-output/semgrep-report.json >> semgrep-output/semgrep-report.md
+
+      - name: Create Pull Request with report
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Add Semgrep security report"
+          branch: semgrep/report
+          title: "📄 Semgrep Security Report"
+          body: |
+            Este PR inclui o relatório de segurança gerado pelo Semgrep com foco no OWASP Top 10.
+
+            Arquivos incluídos:
+            - `semgrep-report.json`
+            - `semgrep-report.md`
+
+          add-paths: |
+            semgrep-output/semgrep-report.json
+            semgrep-output/semgrep-report.md
+
+
