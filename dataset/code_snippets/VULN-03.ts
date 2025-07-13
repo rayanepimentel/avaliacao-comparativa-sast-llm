@@ -42,7 +42,7 @@ export function searchProducts () {
              }
            }
          })
-       } // vuln-code-snippet hide-end
+       }
        for (let i = 0; i < products.length; i++) {
          products[i].name = req.__(products[i].name)
          products[i].description = req.__(products[i].description)
