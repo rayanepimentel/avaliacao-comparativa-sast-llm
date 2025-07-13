@@ -19,10 +19,10 @@
 ├── results/                                     # Armazena os resultados gerados pelos experimentos. Esta pasta inicia vazia e é preenchida pelos scripts.
 ├── scripts/
 │   ├── calculate_metrics.py                     # Gera a Tabela 2 do artigo
-│   ├── llm_calculate_metrics.py                 # Gera calculo de métricas LLMs
 │   ├── requirements.txt                         # Dependências Python
 │   ├── run_llm_analysis.py                      # Executa análise com LLMs
 │   ├── setup_models.sh                          # Instala Ollama + modelos
+│   ├── validate_contextual_recall.py            # Gera recall de métricas LLMs
 └── README.md                                    # Este arquivo
 ```
 
@@ -177,9 +177,9 @@ Para validar que o artefato foi corretamente instalado e executado:
 Esta seção descreve os passos para reproduzir os resultados apresentados no artigo.
 
 
-### Reivindicação \#1: Análise de Desempenho de LLMs com Validação de Categoria
+### Reivindicação #1: Recall de LLMs em Vulnerabilidades Contextuais
 
-**Objetivo**: Reproduzir as métricas de precisão, recall, F1-score e taxa de falsos positivos **especificamente para DeepSeek e CodeLlama**, aplicando uma validação rigorosa da categoria da vulnerabilidade identificada.
+**Objetivo**: Validar que os modelos DeepSeek e CodeLlama alcançam alto recall em ameaças complexas e contextuais (como NoSQLi e Broken Access Control), compreendendo a natureza de suas detecções e a variabilidade inerente a modelos generativos.
 
 **Processo**:
 Este processo é dividido em duas etapas e deve ser executado na sequência:
@@ -243,24 +243,37 @@ Este processo é dividido em duas etapas e deve ser executado na sequência:
         As colunas `*_Raw_Result` conterão a resposta bruta do LLM e `*_Time` pode ser 0.0, a menos que você as cronometre manualmente.
 
 
-3.  **Cálculo das Métricas de LLMs com Validação de Categoria (`llm_category_metrics.py`):**
-    Uma vez que o arquivo `results/llm_detections_results.csv` (seja gerado automaticamente ou criado manualmente) esteja disponível, execute o novo script `llm_category_metrics.py`. Este script:
+2.  **Cálculo do Recall Contextual `(validate_contextual_recall.py)`**:
 
-      * Lerá o `results/llm_detections_results.csv` (com as detecções e categorias identificadas pelos LLMs).
-      * Aplicará a lógica de validação de categoria para contar VP/FP/FN.
-      * Gerará uma tabela de métricas **APENAS para DeepSeek e CodeLlama**.
+Com o arquivo `results/llm_detections_results.csv` gerado (automaticamente ou manualmente), execute o script `validate_contextual_recall.py`. Este script calculará o recall dos LLMs especificamente para as vulnerabilidades contextuais.
 
-    <!-- end list -->
+```Bash
+python scripts/validate_contextual_recall.py
+```
 
-    ```bash
-    python scripts/llm_category_metrics.py
-    ```
+- Tempo esperado: Menos de 10 segundos.
+- Recursos esperados: Baixo consumo de CPU/RAM.
 
-      * **Tempo esperado:** Menos de 10 segundos.
-      * **Recursos esperados:** Baixo consumo de CPU/RAM.
-      * **Saída:** As métricas de desempenho de DeepSeek e CodeLlama (com validação de categoria) serão impressas no terminal e salvas nos arquivos `/results/llm_category_metrics.csv` e `/results/llm_category_metrics.html`.
-      * **Espera-se que os LLMs apresentem maior recall para ameaças como NoSQLi e Controle de Acesso Quebrado, como discutido no artigo.**
+Saída Esperada no terminal:
 
+🔍 **Resultados para Vulnerabilidades Contextuais:**
+
+- **Amostras analisadas:** XY  
+- **DeepSeek:** 4 detectadas | **Recall:** Y.Y% 
+- **CodeLlama:** 3 detectadas | **Recall:** X.X%
+
+**Detalhes por vulnerabilidade:**
+
+| ID       | Vulnerability             | Detected_Deepseek | Detected_CodeLlama |
+|----------|---------------------------|-------------------|--------------------|
+| VULN-04  | NoSQL Injection           | X                 | X                  |
+| VULN-05  | Broken Access Control     | X                 | X                  |
+| VULN-06  | Sensitive Data Exposure   | X                 | X                  |
+| VULN-09  | Broken Access Control     | X                 | X                  |
+| VULN-10  | Validação insuficiente    | X                 | X                  |
+
+
+Onde XY é o número de amostras contextuais, Y.Y% e X.X% são os recalls calculados para DeepSeek e CodeLlama, e X será 1 ou 0, 1 vulnerabilidade identificada e categoria correta, 0 vulnerabilidade não identificada ou categoria incorreta.
 
 
 ### Reivindicação \#2: Execução SAST completa via GitHub Actions
@@ -296,10 +309,10 @@ Este processo demonstra como as análises SAST foram integradas e executadas no 
 
 5.  **Obtenha os resultados**:
 
-      * **Semgrep**: Após a execução bem-sucedida do workflow "Semgrep PR", um novo Pull Request será criado automaticamente em seu fork com o relatório de segurança do Semgrep. Acesse o PR para visualizar o relatório detalhado em Markdown.
-      * **SonarQube**: Após a execução bem-sucedida do workflow "Sonar", os resultados da análise serão enviados para a instância SonarQube configurada. Acesse a interface web da sua instância SonarQube (ex: `https://sonarcloud.io` ou sua URL local) e navegue até o projeto correspondente ao seu fork do Juice Shop para visualizar os alertas de segurança.
+      * **Semgrep**: Após a execução bem-sucedida do workflow "Semgrep PR", um novo Pull Request será criado automaticamente em seu fork com o relatório de segurança do Semgrep. Acesse o PR para visualizar o relatório detalhado em Markdown. Busque por detecções relacionadas a XSS (cross-site-scripting) e SQL Injection (sql-injection) para verificar a precisão da ferramenta.
+      * **SonarQube**: Após a execução bem-sucedida do workflow "Sonar", os resultados da análise serão enviados para a instância SonarQube configurada. Acesse a interface web da sua instância SonarQube (ex: `https://sonarcloud.io` ou sua URL local) e navegue até o projeto correspondente ao seu fork do Juice Shop para visualizar os alertas de segurança. Filtre por vulnerabilidades de segurança e inspecione as detecções de XSS e SQL Injection para confirmar a alta precisão da ferramenta nestas categorias.
       *  Verifique se o tipo de vulnerabilidade identificada foi a categoria correta.
-      * **Verifique a capacidade da ferramenta em identificar com precisão vulnerabilidades padrão como XSS e SQLi.**
+      
 
 > **Notas importantes**:
 >

@@ -1,4 +1,4 @@
-ID,File,Vulnerability,Detected_Deepseek,DeepSeek_Raw_Result,DeepSeek_Time,CodeLlama_Detected,CodeLlama_Raw_Result,CodeLlama_Time
+ID,File,Vulnerability,Detected_Deepseek,DeepSeek_Raw_Result,DeepSeek_Time,Detected_CodeLlama,CodeLlama_Raw_Result,CodeLlama_Time
 VULN-01.ts,VULN-01.ts,XSS,,,,,,,
 VULN-02.js,VULN-02.js,SQLi,,,,,,,
 VULN-03.ts,VULN-03.ts,SQLi,,,,,,,
