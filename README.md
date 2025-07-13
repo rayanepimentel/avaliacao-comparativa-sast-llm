@@ -13,7 +13,7 @@
 │   └── sonarqube.yml
 ├── dataset/
 │   ├── code_snippets/                # Trechos de código analisados (15 arquivos .js/.ts)
-│   ├── juice_shop_ground_truth.csv   # Metadados das análises e ground truth
+│   ├── juice_shop_15_files.csv       # Metadados das análises e ground truth
 ├── results/                          # Resultados gerados (pasta vazia inicialmente)
 ├── scripts/
 │   ├── calculate_metrics.py          # Gera a Tabela 2 do artigo
@@ -76,7 +76,7 @@ ollama>=0.5.1 # Versão utilizada no desenvolvimento
 
   * **OWASP Juice Shop v17.3.0:** O artefato utiliza um subconjunto de 15 arquivos desta aplicação web intencionalmente vulnerável.
   * **Arquivos de código-fonte:** Localizados em `dataset/code_snippets/`. Estes arquivos incluem exemplos vulneráveis e seguros, alguns dos quais foram pré-processados (remoção de comentários de desafio) para a análise dos LLMs, conforme descrito no artigo.
-  * **Ground Truth:** O arquivo `dataset/juice_shop_ground_truth.csv` contém o mapeamento das vulnerabilidades conhecidas para cada arquivo, servindo como a "verdade" para o cálculo das métricas de desempenho.
+  * **Ground Truth:** O arquivo `dataset/juice_shop_15_files.csv` contém o mapeamento das vulnerabilidades conhecidas para cada arquivo, servindo como a "verdade" para o cálculo das métricas de desempenho.
 
 ## Preocupações com segurança
 
