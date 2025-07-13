@@ -1,7 +1,7 @@
 
 # Avaliação Comparativa do Desempenho de Inteligências Artificiais Generativas e Ferramentas Tradicionais na Análise de Código-Fonte JavaScript
 
-**Artigo:** "Avaliação Comparativa do desempenho de inteligências artificiais generativas e ferramentas tradicionais na análise de código-fonte JavaScript"
+**Artigo:** "Avaliação comparativa do desempenho de inteligências artificiais generativas e ferramentas tradicionais na análise de código-fonte JavaScript"
 
 **Resumo do Artefato:** Este artefato implementa uma comparação sistemática do desempenho de inteligências artificiais generativas e ferramentas tradicionais na análise de código-fonte JavaScript. Ele permite a replicação dos experimentos que avaliaram ferramentas SAST (Semgrep/SonarQube) e modelos Large Language Models (LLMs) como DeepSeek e CodeLlama na detecção de vulnerabilidades JavaScript utilizando o OWASP Juice Shop como dataset. O estudo revela que as ferramentas SAST alcançam 100% de precisão para vulnerabilidades padrão (XSS/SQLi) , enquanto os LLMs oferecem maior recall (70% no DeepSeek) para ameaças contextuais (NoSQLi/controle de acesso quebrado), demonstrando a complementaridade entre as abordagens.
 
