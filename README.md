@@ -233,16 +233,18 @@ Este processo é dividido em duas etapas e deve ser executado na sequência:
 
     e.  **Registre a Detecção e a Categoria Identificada:**
         Para facilitar o registro, utilize o template de planilha fornecido em `dataset/templates/llm_detections_manual_template.csv`.
-        - Se a resposta do LLM for `Código seguro`, registre a detecção como **0** (não vulnerável) e a categoria como `N/A`.
-        - Se a resposta for um JSON com detalhes da vulnerabilidade, registre a detecção como **1** (vulnerável) e extraia a **"Tipo da Vulnerabilidade"** (`Vulnerability Category`) do JSON – Verifique se o tipo de vulnerabilidade identificada foi a categoria correta. Se o LLM descrever a vulnerabilidade em texto livre (sem JSON), tente identificar a categoria principal mencionada no texto.
-        - Mantenha um registro neste template dos IDs dos arquivos, as detecções (0 ou 1), e a **categoria da vulnerabilidade identificada pelo LLM**. Isso é crucial para a próxima etapa.
+    - Se a resposta do LLM for `Código seguro`, registre a detecção como **0** (não vulnerável) e a categoria como `N/A`.
+    - Se a resposta for um JSON com detalhes da vulnerabilidade, registre a detecção como **1** (vulnerável) do JSON – Verifique se o tipo de vulnerabilidade identificada foi a categoria correta. Se o LLM descrever a vulnerabilidade em texto livre (sem JSON), tente identificar a categoria principal mencionada no texto.
+    - Mantenha o registro neste template dos IDs dos arquivos, as detecções (0 ou 1), e a **categoria da vulnerabilidade identificada pelo LLM**. Isso é crucial para a próxima etapa.
+
     f.  **Repita:** Repita os passos de `a` a `e` para todos os 15 arquivos do dataset e para ambos os modelos LLM (DeepSeek-Coder:1.3b e CodeLlama:7b).
+
     g.  **Crie o `llm_detections_results.csv` manual:**
         Após coletar todas as detecções e categorias no template, salve o arquivo preenchido como `/results/llm_detections_results.csv`.
         As colunas `*_Raw_Result` conterão a resposta bruta do LLM e `*_Time` pode ser 0.0, a menos que você as cronometre manualmente.
 
 
-2.  **Cálculo das Métricas de LLMs com Validação de Categoria (`llm_category_metrics.py`):**
+3.  **Cálculo das Métricas de LLMs com Validação de Categoria (`llm_category_metrics.py`):**
     Uma vez que o arquivo `results/llm_detections_results.csv` (seja gerado automaticamente ou criado manualmente) esteja disponível, execute o novo script `llm_category_metrics.py`. Este script:
 
       * Lerá o `results/llm_detections_results.csv` (com as detecções e categorias identificadas pelos LLMs).
