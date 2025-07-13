@@ -1,42 +1,24 @@
-name: SAST SonarQube
+name: Sonar
 
 on:
-  workflow_dispatch:
+ workflow_dispatch:
+
 
 jobs:
-  sonarqube:
+  build:
+    name: Build and analyze
     runs-on: ubuntu-latest
-    services:
-      sonarqube:
-        image: sonarqube:25.5-community
-        ports:
-          - "9000:9000"
-          
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Wait for SonarQube
-      run: sleep 120
-      
-    - name: Scan dataset snippets
-      uses: SonarSource/sonarqube-scan-action@v5
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: "http://localhost:9000"
-      with:
-        projectBaseDir: dataset/code_snippets
-        args: >
-          -Dsonar.projectKey=juice-shop-snippets
-          -Dsonar.sources=.
-          -Dsonar.exclusions=**/node_modules/**,**/dist/**
-          
-    - name: Export findings
-      run: |
-        # Obter resultados da análise
-        curl -u admin:admin "http://localhost:9000/api/issues/search?componentKeys=juice-shop-snippets" > results/sonar-results.json
-        
-    - name: Upload results
-      uses: actions/upload-artifact@v3
-      with:
-        name: sonarqube-results
-        path: results/sonar-results.json
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        with:
+          args: >
+           Dsonar.inclusions=server.ts,frontend/src/app/app.routing.ts,frontend/src/app/search-result/search-result.component.ts,,routes/login.ts,routes/search.ts,routes/updateProductReviews.ts,data/static/codefixes/xssBonusChallenge_1_correct.ts,data/static/codefixes/unionSqlInjectionChallenge_2_correct.ts,/data/static/codefixes/accessLogDisclosureChallenge_1_correct.ts,data/static/codefixes/accessLogDisclosureChallenge_1_correct.ts,data/static/codefixes/adminSectionChallenge_1_correct.ts,data/static/codefixes/dbSchemaChallenge_2_correct.ts
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
