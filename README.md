@@ -8,20 +8,22 @@
 ## Estrutura do readme.md
 
 ```
-├── .github/workflows/                # Pipelines SAST (GitHub Actions)
+├── .github/workflows/                           # Pipelines SAST (GitHub Actions)
 │   ├── semgrep.yml
 │   └── sonarqube.yml
 ├── dataset/
-│   ├── code_snippets/                # Trechos de código analisados (15 arquivos .ts)
-│   ├── juice_shop_15_files.csv       # Metadados das análises e ground truth
-├── results/                          # Armazena os resultados gerados pelos experimentos. Esta pasta inicia vazia e é preenchida pelos scripts.
+│   ├── code_snippets/                           # Trechos de código analisados (15 arquivos .ts)
+│   ├── juice_shop_15_files.csv                  # Metadados das análises e ground truth
+│   ├── templates/                               # Modelos de arquivos para preenchimento manual
+│       ├── llm_detections_manual_template.csv   # Template para registro manual das detecções dos LLMs
+├── results/                                     # Armazena os resultados gerados pelos experimentos. Esta pasta inicia vazia e é preenchida pelos scripts.
 ├── scripts/
-│   ├── calculate_metrics.py          # Gera a Tabela 2 do artigo
-│   ├── llm_calculate_metrics.py      # Gera calculo de métricas LLMs
-│   ├── requirements.txt              # Dependências Python
-│   ├── run_llm_analysis.py           # Executa análise com LLMs
-│   ├── setup_models.sh               # Instala Ollama + modelos
-└── README.md                         # Este arquivo
+│   ├── calculate_metrics.py                     # Gera a Tabela 2 do artigo
+│   ├── llm_calculate_metrics.py                 # Gera calculo de métricas LLMs
+│   ├── requirements.txt                         # Dependências Python
+│   ├── run_llm_analysis.py                      # Executa análise com LLMs
+│   ├── setup_models.sh                          # Instala Ollama + modelos
+└── README.md                                    # Este arquivo
 ```
 
 ## Selos Considerados
@@ -92,7 +94,7 @@ Resultados de modelos generativos (DeepSeek/CodeLlama) **podem variar entre exec
 - Limitações de janela de contexto
 - Variações na inicialização de pesos
 
-Para comparativos acadêmicos, em [Reivindicação #1](#reivindicação-1-métricas-comparativas-de-desempenho---llms) execute o script `run_llm_analysis.py` **3 vezes** e utilize a mediana dos resultados.
+Para comparativos acadêmicos, em [Reivindicação #1](#reivindicação-1-análise-de-desempenho-de-llms-com-validação-de-categoria) execute o script `run_llm_analysis.py` **3 vezes** e utilize a mediana dos resultados. Necessário salvar o resultado antes de rodar o script novamente.
 
 ## Instalação
 
@@ -190,12 +192,12 @@ Este processo é dividido em duas etapas e deve ser executado na sequência:
     python scripts/run_llm_analysis.py
     ```
 
-      * **Tempo esperado:** Aproximadamente 30-45 minutos (em CPU com 8GB RAM). Pode ser significativamente mais rápido com GPU.
+      * **Tempo esperado:** Aproximadamente 30-80 minutos (em CPU com 8GB RAM). Pode ser significativamente mais rápido com GPU.
       * **Recursos esperados:** Uso intensivo de CPU e RAM durante a inferência dos LLMs.
-      * **Saída:** Um arquivo `results/llm_detections_results.csv` será gerado, contendo os IDs dos arquivos, caminhos, detecções binárias iniciais (0 ou 1, baseadas na *presença de qualquer vulnerabilidade*), tempos de execução e as respostas brutas dos LLMs (textos ou JSONs). Logs de execução e progresso serão exibidos no terminal.
+      * **Saída:** Um arquivo `results/llm_detections_results.csv` será gerado, contendo os IDs dos arquivos, caminhos, detecções binárias iniciais (0 ou 1, baseadas na *presença de qualquer vulnerabilidade*), tempos de execução e as respostas brutas dos LLMs (textos ou JSONs). Logs de execução e progresso serão exibidos no terminal. Necerssário validar manualmente se as detecções estão corretas.
 
     **Alternativa Manual (se `run_llm_analysis.py` falhar):**
-    Caso a execução automatizada do `run_llm_analysis.py` encontre problemas operacionais dentro do contêiner, é possível realizar a análise dos LLMs manualmente, interagindo diretamente com o Ollama CLI. Este processo deve ser repetido para cada um dos 15 arquivos de código-fonte no diretório `/dataset/code_snippets/` e para cada modelo LLM (DeepSeek-Coder:1.3b e CodeLlama:7b).
+    Caso a execução automatizada do `run_llm_analysis.py` encontre problemas operacionais, é possível realizar a análise dos LLMs manualmente, interagindo diretamente com o Ollama CLI. Este processo deve ser repetido para cada um dos 15 arquivos de código-fonte no diretório `/dataset/code_snippets/` e para cada modelo LLM (DeepSeek-Coder:1.3b e CodeLlama:7b).
 
     **Passos para Análise Manual:**
     a.  **Inicie o Ollama com o modelo desejado no terminal:**
@@ -225,19 +227,20 @@ Este processo é dividido em duas etapas e deve ser executado na sequência:
     ```
     ````
 
-    c.  **Obtenha o Conteúdo do Código:** Vá para o diretório `/dataset/code_snippets/` dentro do contêiner, abra um dos 15 arquivos (ex: `VULN-01.ts` ou `SAFE-01.ts`), copie todo o conteúdo e cole-o no prompt do Ollama, substituindo `# COLE AQUI O CONTEÚDO DO ARQUIVO DE CÓDIGO`.
+    c.  **Obtenha o Conteúdo do Código:** Vá para o diretório `/dataset/code_snippets/`, abra um dos 15 arquivos (ex: `VULN-01.ts` ou `SAFE-01.ts`), copie todo o conteúdo e cole-o no prompt do Ollama, substituindo `# COLE AQUI O CONTEÚDO DO ARQUIVO DE CÓDIGO`.
 
     d.  **Envie e Colete a Resposta:** Pressione `Enter` para enviar o prompt ao LLM. Copie a resposta completa gerada pelo Ollama.
 
     e.  **Registre a Detecção e a Categoria Identificada:**
-    - Se a resposta do LLM for `Código seguro`, registre a detecção como **0** (não vulnerável) e a categoria como `N/A`.
-    - Se a resposta for um JSON com detalhes da vulnerabilidade, registre a detecção como **1** (vulnerável) e extraia a **"Tipo da Vulnerabilidade"** (`Vulnerability Category`) do JSON – Verifique se o tipo de vulnerabilidade identificada foi a categoria correta. Se o LLM descrever a vulnerabilidade em texto livre (sem JSON), tente identificar a categoria principal mencionada no texto.
-    - Mantenha um registro em uma planilha ou similar (por exemplo, `llm_detections_manual.csv`) dos IDs dos arquivos, as detecções (0 ou 1), e a **categoria da vulnerabilidade identificada pelo LLM**. Isso é crucial para a próxima etapa.
-
+        Para facilitar o registro, utilize o template de planilha fornecido em `dataset/templates/llm_detections_manual_template.csv`.
+        - Se a resposta do LLM for `Código seguro`, registre a detecção como **0** (não vulnerável) e a categoria como `N/A`.
+        - Se a resposta for um JSON com detalhes da vulnerabilidade, registre a detecção como **1** (vulnerável) e extraia a **"Tipo da Vulnerabilidade"** (`Vulnerability Category`) do JSON – Verifique se o tipo de vulnerabilidade identificada foi a categoria correta. Se o LLM descrever a vulnerabilidade em texto livre (sem JSON), tente identificar a categoria principal mencionada no texto.
+        - Mantenha um registro neste template dos IDs dos arquivos, as detecções (0 ou 1), e a **categoria da vulnerabilidade identificada pelo LLM**. Isso é crucial para a próxima etapa.
     f.  **Repita:** Repita os passos de `a` a `e` para todos os 15 arquivos do dataset e para ambos os modelos LLM (DeepSeek-Coder:1.3b e CodeLlama:7b).
+    g.  **Crie o `llm_detections_results.csv` manual:**
+        Após coletar todas as detecções e categorias no template, salve o arquivo preenchido como `/results/llm_detections_results.csv`.
+        As colunas `*_Raw_Result` conterão a resposta bruta do LLM e `*_Time` pode ser 0.0, a menos que você as cronometre manualmente.
 
-    g.  **Crie o `llm_detections_results.csv` manual:** 
-    Após coletar todas as detecções e categorias, crie manualmente um arquivo `/results/llm_detections_results.csv` com as colunas `ID`, `File`, `Vulnerability`, `Detected_Deepseek` (0 ou 1), `DeepSeek_Raw_Result`, `DeepSeek_Time`, `CodeLlama_Detected` (0 ou 1), `CodeLlama_Raw_Result`, `CodeLlama_Time`, **`DeepSeek_Identified_Category`** (NOVA COLUNA), e **`CodeLlama_Identified_Category`** (NOVA COLUNA). As colunas `*_Raw_Result` conterão a resposta bruta do LLM e `*_Time` pode ser 0.0, a menos que você as cronometre manualmente.
 
 2.  **Cálculo das Métricas de LLMs com Validação de Categoria (`llm_category_metrics.py`):**
     Uma vez que o arquivo `results/llm_detections_results.csv` (seja gerado automaticamente ou criado manualmente) esteja disponível, execute o novo script `llm_category_metrics.py`. Este script:
@@ -255,6 +258,7 @@ Este processo é dividido em duas etapas e deve ser executado na sequência:
       * **Tempo esperado:** Menos de 10 segundos.
       * **Recursos esperados:** Baixo consumo de CPU/RAM.
       * **Saída:** As métricas de desempenho de DeepSeek e CodeLlama (com validação de categoria) serão impressas no terminal e salvas nos arquivos `/results/llm_category_metrics.csv` e `/results/llm_category_metrics.html`.
+      * **Espera-se que os LLMs apresentem maior recall para ameaças como NoSQLi e Controle de Acesso Quebrado, como discutido no artigo.**
 
 
 
@@ -294,6 +298,7 @@ Este processo demonstra como as análises SAST foram integradas e executadas no 
       * **Semgrep**: Após a execução bem-sucedida do workflow "Semgrep PR", um novo Pull Request será criado automaticamente em seu fork com o relatório de segurança do Semgrep. Acesse o PR para visualizar o relatório detalhado em Markdown.
       * **SonarQube**: Após a execução bem-sucedida do workflow "Sonar", os resultados da análise serão enviados para a instância SonarQube configurada. Acesse a interface web da sua instância SonarQube (ex: `https://sonarcloud.io` ou sua URL local) e navegue até o projeto correspondente ao seu fork do Juice Shop para visualizar os alertas de segurança.
       *  Verifique se o tipo de vulnerabilidade identificada foi a categoria correta.
+      * **Verifique a capacidade da ferramenta em identificar com precisão vulnerabilidades padrão como XSS e SQLi.**
 
 > **Notas importantes**:
 >
