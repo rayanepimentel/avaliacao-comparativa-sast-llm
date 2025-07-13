@@ -289,7 +289,7 @@ Este processo demonstra como as análises SAST foram integradas e executadas no 
 
       * No seu **fork** do repositório `juice-shop`, navegue até o diretório `.github/workflows`.
       * Se não existir, crie esta pasta.
-      * Copie o conteúdo dos arquivos `semgrep.yml` e `sonarqube.yml` deste projeto (localizados em `.github/workflows/`) para a pasta `.github/workflows/` no seu fork.
+      * Copie o conteúdo dos arquivos `semgrep.yml` e `sonarqube.yml` deste projeto (localizados em `.github/workflows/`) para a pasta `.github/workflows/` no seu fork. Estes workflows já estão configurados para analisar apenas os 15 arquivos de código-source do dataset, garantindo que a validação se concentre nas vulnerabilidades relevantes para este estudo.
 
 3.  **Configure os Secrets do GitHub (APENAS PARA SONARQUBE)**:
 
