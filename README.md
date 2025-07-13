@@ -144,7 +144,18 @@ python scripts/calculate_metrics.py dataset/juice_shop_15_files.csv
 
 **Saída esperada no terminal (similar à Tabela 2 do artigo):**
 
-![Tabela 2. Comparação de Métricas entre Ferramentas de Análise de Segurança](image.png)
+**Tabela 2. Comparação de Métricas entre Ferramentas de Análise de Segurança**
+
+| Ferramenta | Precisão | Recall | F1-Score | FP Rate | VP | FP | FN |
+|------------|----------|--------|----------|---------|----|----|----|
+| Semgrep    | 100%     | 50%    | 67%      | 0%      | 5  | 0  | 5  |
+| SonarQube  | 100%     | 10%    | 18%      | 0%      | 1  | 0  | 9  |
+| DeepSeek   | 78%      | 70%    | 74%      | 22%     | 7  | 2  | 3  |
+| CodeLlama  | 55%      | 60%    | 57%      | 45%     | 6  | 5  | 4  |
+
+> **Nota:** VP = Verdadeiros Positivos, FP = Falsos Positivos, FN = Falsos Negativos.  
+> Dados obtidos da análise do OWASP Juice Shop v17.3.0.
+
 
 **Arquivos gerados/atualizados na pasta `results/` (inicialmente vazia):**
 
