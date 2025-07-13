@@ -209,10 +209,12 @@ Este processo é dividido em duas etapas e deve ser executado na sequência:
     Você verá o prompt `>>> Send a message (/? for help)`.
 
     b.  **Construa o Prompt:** Copie o template de prompt abaixo e cole no terminal do Ollama.
-    \`\`\`text
-    Analise os riscos de segurança no código abaixo, seguindo o OWASP Top 10. Retorne APENAS se houver vulnerabilidades, no formato JSON abaixo. Caso contrário, retorne "Código seguro".
-
-    ````
+  
+    ``` 
+    Analise os riscos de segurança no código abaixo, seguindo o OWASP Top 10.
+    Retorne APENAS se houver vulnerabilidades no formato JSON abaixo.
+    Caso contrário, retorne "Código seguro".
+    
     {
       "Arquivo": "Nome do arquivo",
       "Trecho Vulnerável": "O snippet de código específico que contém a vulnerabilidade.",
@@ -221,11 +223,10 @@ Este processo é dividido em duas etapas e deve ser executado na sequência:
     }
 
     Code:
-    ```typescript
+
     # COLE AQUI O CONTEÚDO DO ARQUIVO DE CÓDIGO
+  
     ```
-    ```
-    ````
 
     c.  **Obtenha o Conteúdo do Código:** Vá para o diretório `/dataset/code_snippets/`, abra um dos 15 arquivos (ex: `VULN-01.ts` ou `SAFE-01.ts`), copie todo o conteúdo e cole-o no prompt do Ollama, substituindo `# COLE AQUI O CONTEÚDO DO ARQUIVO DE CÓDIGO`.
 
