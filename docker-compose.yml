@@ -1,0 +1,191 @@
+# docker-compose.yml
+#version: '3.8'
+
+services:
+  # Serviço principal de análise com uv para instalação rápida
+  analysis:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        - USE_UV=true  # Usar uv para instalação mais rápida
+    container_name: sast-llm-analysis
+    volumes:
+      - ./dataset:/app/dataset:ro
+      - ./scripts:/app/scripts:ro
+      - ./results:/app/results
+      - ollama_models:/root/.ollama
+    environment:
+      - DEEPSEEK_VERSION=deepseek-coder:1.3b
+      - CODELLAMA_VERSION=codellama:7b
+      - OLLAMA_HOST=0.0.0.0:11434
+      - PYTHONPATH=/app
+      - SONAR_HOST_URL=http://sonarqube:9000
+      - SONAR_TOKEN=squ_admin_token_placeholder
+    ports:
+      - "11434:11434"  # Ollama API
+    command: >
+      bash -c "
+        echo '🚀 Iniciando ambiente SAST vs LLM...' &&
+        
+        # Configurar sistema
+        echo 'vm.max_map_count=262144' > /etc/sysctl.conf &&
+        
+        # Iniciar Ollama
+        ollama serve &
+        OLLAMA_PID=\$! &&
+        
+        # Aguardar Ollama
+        echo '⏳ Aguardando Ollama...' &&
+        for i in {1..60}; do
+          if curl -s http://localhost:11434/api/tags > /dev/null 2>&1; then
+            echo '✅ Ollama pronto!' && break
+          fi
+          sleep 2
+        done &&
+        
+        # Baixar modelos em paralelo
+        echo '📥 Baixando modelos LLM...' &&
+        (ollama pull deepseek-coder:1.3b && echo '✅ DeepSeek instalado' || echo '❌ Falha no DeepSeek') &
+        (ollama pull codellama:7b && echo '✅ CodeLlama instalado' || echo '❌ Falha no CodeLlama') &
+        wait &&
+        
+        # Verificar modelos
+        echo '📋 Modelos disponíveis:' &&
+        ollama list &&
+        
+        # Teste rápido
+        echo '🧪 Teste rápido dos modelos...' &&
+        timeout 30 ollama run deepseek-coder:1.3b 'print(\"DeepSeek OK\")' || echo '⚠️ DeepSeek timeout' &&
+        timeout 30 ollama run codellama:7b 'print(\"CodeLlama OK\")' || echo '⚠️ CodeLlama timeout' &&
+        
+        echo '🎉 Ambiente pronto! Execute: make test-minimal' &&
+        tail -f /dev/null
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    mem_limit: 8g
+    cpus: '4.0'
+    restart: unless-stopped
+
+  # SonarQube com configuração pré-definida
+  sonarqube:
+    image: sonarqube:10.3.0-community
+    container_name: sast-llm-sonarqube
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+      - SONAR_JDBC_URL=jdbc:postgresql://postgres:5432/sonar
+      - SONAR_JDBC_USERNAME=sonar
+      - SONAR_JDBC_PASSWORD=sonar
+      - SONAR_WEB_JAVAADDITIONALOPTS=-Dsonar.web.systemPasscode=admin
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/api/system/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 15
+    mem_limit: 3g
+    restart: unless-stopped
+
+  # PostgreSQL otimizado para SonarQube
+  postgres:
+    image: postgres:15-alpine
+    container_name: sast-llm-postgres
+    environment:
+      - POSTGRES_DB=sonar
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sonar -d sonar"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    mem_limit: 1g
+    restart: unless-stopped
+
+  # Semgrep com análise automática
+  semgrep:
+    image: semgrep/semgrep:1.49.0
+    container_name: sast-llm-semgrep
+    volumes:
+      - ./dataset:/src:ro
+      - ./results:/results
+    working_dir: /src
+    command: >
+      bash -c "
+        echo '🟢 Preparando análise Semgrep...' &&
+        mkdir -p /results &&
+        echo '🔍 Executando análise Semgrep...' &&
+        semgrep --config=auto code_snippets/ --json --output=/results/semgrep_results.json &&
+        semgrep --config=auto code_snippets/ --sarif --output=/results/semgrep_results.sarif &&
+        echo '✅ Análise Semgrep concluída!' &&
+        echo 'Resultados em: /results/semgrep_results.json' &&
+        tail -f /dev/null
+      "
+    depends_on:
+      - analysis
+    restart: unless-stopped
+
+  # Inicializador automático que configura SonarQube
+  sonarqube-init:
+    image: curlimages/curl:8.4.0
+    container_name: sast-llm-sonar-init
+    depends_on:
+      sonarqube:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '🔧 Configurando SonarQube...' &&
+        
+        # Aguardar SonarQube estar totalmente pronto
+        sleep 30 &&
+        
+        # Criar token de análise
+        curl -u admin:admin -X POST 'http://sonarqube:9000/api/user_tokens/generate' \
+          -d 'name=analysis-token' || echo 'Token já existe' &&
+        
+        # Criar projeto
+        curl -u admin:admin -X POST 'http://sonarqube:9000/api/projects/create' \
+          -d 'project=juice-shop-analysis' \
+          -d 'name=OWASP Juice Shop Security Analysis' || echo 'Projeto já existe' &&
+        
+        # Configurar qualidade de código
+        curl -u admin:admin -X POST 'http://sonarqube:9000/api/qualitygates/create' \
+          -d 'name=Security-Focused' || echo 'Quality Gate já existe' &&
+        
+        echo '✅ SonarQube configurado!' &&
+        echo '🌐 Acesse: http://localhost:9000 (admin/admin)' &&
+        echo '📊 Projeto: juice-shop-analysis'
+      "
+    restart: "no"
+
+volumes:
+  ollama_models:
+    driver: local
+  sonarqube_data:
+    driver: local
+  sonarqube_logs:
+    driver: local
+  sonarqube_extensions:
+    driver: local
+  postgres_data:
+    driver: local
+
+networks:
+  default:
+    name: sast-llm-network
+    driver: bridge

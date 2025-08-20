@@ -1,0 +1,90 @@
+# docker/Dockerfile
+FROM python:3.11-slim
+
+# Argumentos de build
+ARG USE_UV=true
+
+# Metadados
+LABEL maintainer="Avaliação SAST vs LLM" \
+      version="2.0" \
+      description="Ambiente otimizado para análise comparativa SAST vs LLM"
+
+# Variáveis de ambiente
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    DEBIAN_FRONTEND=noninteractive \
+    PATH="/root/.local/bin:$PATH"
+
+# Instalar dependências do sistema em uma única camada
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    build-essential \
+    bc \
+    unzip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Instalar uv para gerenciamento rápido de pacotes Python
+RUN if [ "$USE_UV" = "true" ]; then \
+        curl -LsSf https://astral.sh/uv/install.sh | sh && \
+        echo "✅ UV instalado para instalação rápida de dependências"; \
+    fi
+
+# Instalar Ollama
+RUN curl -fsSL https://ollama.com/install.sh | sh
+
+# Criar diretório de trabalho
+WORKDIR /app
+
+# Copiar requirements primeiro (para melhor cache do Docker)
+COPY scripts/requirements.txt /app/requirements.txt
+
+# Instalar dependências Python (usando uv se disponível)
+RUN if [ "$USE_UV" = "true" ] && [ -f "/root/.local/bin/uv" ]; then \
+        echo "📦 Instalando dependências com UV (mais rápido)..." && \
+        /root/.local/bin/uv pip install --system -r requirements.txt; \
+    else \
+        echo "📦 Instalando dependências com PIP..." && \
+        pip install --no-cache-dir -r requirements.txt; \
+    fi
+
+# Instalar Semgrep com versão fixa
+RUN pip install semgrep==1.49.0
+
+# Instalar SonarScanner
+RUN wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip && \
+    unzip -q sonar-scanner-cli-4.8.0.2856-linux.zip && \
+    mv sonar-scanner-4.8.0.2856-linux /opt/sonar-scanner && \
+    ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner && \
+    rm sonar-scanner-cli-4.8.0.2856-linux.zip
+
+# Copiar todo o código do projeto
+COPY . /app/
+
+# Dar permissões executáveis aos scripts
+RUN find scripts/ -name "*.sh" -exec chmod +x {} \; && \
+    find scripts/ -name "*.py" -exec chmod +x {} \;
+
+# Criar diretórios necessários
+RUN mkdir -p /app/results /root/.ollama
+
+# Script de verificação de saúde
+COPY docker/healthcheck.sh /app/healthcheck.sh
+RUN chmod +x /app/healthcheck.sh
+
+# Configurar limite de memória virtual para Elasticsearch (SonarQube)
+RUN echo 'vm.max_map_count=262144' >> /etc/sysctl.conf
+
+# Expor portas
+EXPOSE 11434 9000
+
+# Verificação de saúde
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD /app/healthcheck.sh
+
+# Comando padrão
+CMD ["bash", "-c", "echo '🚀 Container pronto. Use docker-compose para iniciar serviços.'"]

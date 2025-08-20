@@ -18,12 +18,15 @@
 │       ├── llm_detections_manual_template.csv   # Template para registro manual das detecções dos LLMs
 ├── results/                                     # Armazena os resultados gerados pelos experimentos. Esta pasta inicia vazia e é preenchida pelos scripts.
 ├── scripts/
-│   ├── calculate_metrics.py                     # Gera a Tabela 2 do artigo
-│   ├── requirements.txt                         # Dependências Python
-│   ├── run_llm_analysis.py                      # Executa análise com LLMs
-│   ├── setup_models.sh                          # Instala Ollama + modelos
-│   ├── validate_contextual_recall.py            # Gera recall de métricas LLMs
-└── README.md                                    # Este arquivo
+│   ├── calculate_metrics.py    # Gera a Tabela 2 do artigo
+│   ├── run_llm_analysis.py     # Executa análise com LLMs (atualizado)
+│   ├── run_sonar_analysis.sh   # Análise SonarQube automatizada (NOVO)
+│   ├── validate_contextual_recall.py
+│   ├── validate_environment.sh # Validação completa do ambiente (86 testes)
+│   └── requirements.txt        # Dependências Python com versões travadas
+├── Makefile                    # Interface de comandos simplificada 
+├── docker-compose.yml          # Orquestração de serviços (Ollama, SonarQube, etc.)
+└── README.md                   # Este arquivo
 ```
 
 ## Selos Considerados
@@ -40,8 +43,8 @@ Os selos considerados para este artefato são:
 ### Ambiente de Execução
 
   * **Sistema Operacional:** Linux (Ubuntu 20.04+), macOS ou WSL2
-  * **Python:** 3.8+ (Recomendado: Python 3.9, 3.10, 3.11 ou 3.12 para melhor compatibilidade com as bibliotecas científicas como scikit-learn)
-  * **Docker:** 20.10+ (necessário para a execução local do SonarQube, se optar por não usar GitHub Actions)
+  * **Python:** 3.11
+  * **Docker:** 20.10 (necessário para a execução local do SonarQube, se optar por não usar GitHub Actions)
   * **Memória RAM:** Mínimo 4GB (8GB recomendado para a execução dos LLMs).
   * **Espaço em disco:** 5GB livres.
 
@@ -50,40 +53,13 @@ Os selos considerados para este artefato são:
   * **Acesso à Internet:** Necessário para o download de dependências (modelos Ollama, pacotes Python, etc.).
   * **GPU:** Opcional para aceleração da inferência dos LLMs (altamente recomendado para reduzir o tempo de execução).
 
-## Dependências
 
-### Essenciais (para reprodução básica e cálculo de métricas)
-
-```bash
-# Bibliotecas Python
-pandas==2.0.3
-scikit-learn==1.3.2
-numpy==1.26.4
-ollama==0.5.1 
-python-dotenv==1.0.1 # Para carregar variáveis de ambiente
-```
-
-### Opcionais (para análise completa via Ollama e SAST)
-
-```bash
-# Para LLMs (Ollama e seus modelos)
-ollama>=0.5.1 # Versão utilizada no desenvolvimento
-# Os modelos CodeLlama-7b e DeepSeek-Coder-1.3b são gerenciados pelo Ollama.
-
-# Para SASTs (via GitHub Actions ou Docker para SonarQube)
-# As ferramentas Semgrep (versão 1.49) e SonarQube (Community Build versão 25.5)
-# são instaladas e gerenciadas via GitHub Actions ou localmente via Docker.
-```
 
 ## Dataset Base
 
   * **OWASP Juice Shop v17.3.0:** O artefato utiliza um subconjunto de 15 arquivos desta aplicação web intencionalmente vulnerável.
   * **Arquivos de código-fonte:** Localizados em `dataset/code_snippets/`. Estes arquivos incluem exemplos vulneráveis e seguros, alguns dos quais foram pré-processados (remoção de comentários de desafio) para a análise dos LLMs, conforme descrito no artigo.
   * **Ground Truth:** O arquivo `dataset/juice_shop_15_files.csv` contém o mapeamento das vulnerabilidades conhecidas para cada arquivo, servindo como a "verdade" para o cálculo das métricas de desempenho.
-
-## Preocupações com segurança
-
-⚠️ **ATENÇÃO:** Este artefato utiliza código intencionalmente vulnerável proveniente do OWASP Juice Shop para fins de pesquisa e demonstração. Não utilize este código ou o ambiente de teste em sistemas de produção ou em redes não seguras. Recomenda-se a execução em um ambiente isolado, como uma máquina virtual.
 
 ## 🔄 Notas sobre Reprodutibilidade dos LLMs
 
@@ -105,43 +81,16 @@ git clone https://github.com/rayanepimentel/avaliacao-comparativa-sast-llm.git
 cd avaliacao-comparativa-sast-llm
 ```
 
-### 2\. Ambiente Python
-
-Crie um ambiente virtual e instale as dependências Python:
+### 2\.Execute ambiente completo
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate  # Para Linux/macOS
-# ou
-.\venv\Scripts\activate   # Para Windows (no PowerShell)
-
-# Instale as dependências 
-pip install -r scripts/requirements.txt
+make quick-start
 ```
-
-### 3\. Instalação do Ollama e Modelos LLM (Opcional, mas necessário para análise LLM)
-
-Este passo instala a ferramenta Ollama e baixa os modelos CodeLlama e DeepSeek-Coder.
-
-```bash
-# Dar permissão de execução e executar o script de instalação
-chmod +x scripts/setup_models.sh
-./scripts/setup_models.sh
-```
-
-*Este script automatiza:*
-
-  * A instalação do Ollama para o seu sistema operacional.
-  * O download dos modelos `codellama:7b` e `deepseek-coder:1.3b` via Ollama.
 
 
 ## Teste Mínimo
 
-Execute o script de cálculo de métricas para verificar a funcionalidade básica do ambiente e a geração de resultados com o dataset original (juice_shop_15_files.csv). Este teste validará a correta instalação das dependências Python e a execução do calculate_metrics.py.
-
-```bash
-python scripts/calculate_metrics.py dataset/juice_shop_15_files.csv
-```
+Ao rodar make quick-start, será gerado o teste mímino.
 
 **Saída esperada no terminal (similar à Tabela 2 do artigo):**
 
@@ -184,71 +133,22 @@ Esta seção descreve os passos para reproduzir os resultados apresentados no ar
 **Processo**:
 Este processo é dividido em duas etapas e deve ser executado na sequência:
 
-1.  **Execução da Análise Bruta de LLMs (`run_llm_analysis.py`):** O script `run_llm_analysis.py` interage com os modelos Ollama, analisa cada trecho de código do dataset e consolida as respostas das detecções dos LLMs em um novo arquivo CSV na pasta `results/`.
+1.  **Execução da Análise Bruta de LLMs (`run_llm_analysis.py`)**:
 
-    ```bash
-    python scripts/run_llm_analysis.py
-    ```
-
-      * **Tempo esperado:** Aproximadamente 30-80 minutos (em CPU com 8GB RAM). Pode ser significativamente mais rápido com GPU.
-      * **Recursos esperados:** Uso intensivo de CPU e RAM durante a inferência dos LLMs.
-      * **Saída:** Um arquivo `results/llm_detections_results.csv` será gerado, contendo os IDs dos arquivos, caminhos, detecções binárias iniciais (0 ou 1, baseadas na *presença de qualquer vulnerabilidade*), tempos de execução e as respostas brutas dos LLMs (textos ou JSONs). Logs de execução e progresso serão exibidos no terminal. Necerssário validar manualmente se as detecções estão corretas.
-
-    **Alternativa Manual (se `run_llm_analysis.py` falhar):**
-    Caso a execução automatizada do `run_llm_analysis.py` encontre problemas operacionais, é possível realizar a análise dos LLMs manualmente, interagindo diretamente com o Ollama CLI. Este processo deve ser repetido para cada um dos 15 arquivos de código-fonte no diretório `/dataset/code_snippets/` e para cada modelo LLM (DeepSeek-Coder:1.3b e CodeLlama:7b).
-
-    **Passos para Análise Manual:**
-    a.  **Inicie o Ollama com o modelo desejado no terminal:**
-
-    ```bash 
-    ollama run deepseek-coder:1.3b # Ou ollama run codellama:7b 
-    ```
-
-    Você verá o prompt `>>> Send a message (/? for help)`.
-
-    b.  **Construa o Prompt:** Copie o template de prompt abaixo e cole no terminal do Ollama.
-  
-    ``` 
-    Analise os riscos de segurança no código abaixo, seguindo o OWASP Top 10.
-    Retorne APENAS se houver vulnerabilidades no formato JSON abaixo.
-    Caso contrário, retorne "Código seguro".
-    
-    {
-      "Arquivo": "Nome do arquivo",
-      "Trecho Vulnerável": "O snippet de código específico que contém a vulnerabilidade.",
-      "Tipo da Vulnerabilidade": "A categoria da vulnerabilidade",
-      "Descrição Breve": "Uma explicação concisa (1-2 frases) de por que esse trecho é vulnerável"
-    }
-
-    Code:
-
-    # COLE AQUI O CONTEÚDO DO ARQUIVO DE CÓDIGO
-  
-    ```
-
-    c.  **Obtenha o Conteúdo do Código:** Vá para o diretório `/dataset/code_snippets/`, abra um dos 15 arquivos (ex: `VULN-01.ts` ou `SAFE-01.ts`), copie todo o conteúdo e cole-o no prompt do Ollama, substituindo `# COLE AQUI O CONTEÚDO DO ARQUIVO DE CÓDIGO`.
-
-    d.  **Envie e Colete a Resposta:** Pressione `Enter` para enviar o prompt ao LLM. Copie a resposta completa gerada pelo Ollama.
-
-    e.  **Registre a Detecção e a Categoria Identificada:**
-        Para facilitar o registro, utilize o template de planilha fornecido em `dataset/templates/llm_detections_manual_template.csv`.
-    - Se a resposta do LLM for `Código seguro`, registre a detecção como **0** (não vulnerável) e a categoria como `N/A`.
-    - Se a resposta for um JSON com detalhes da vulnerabilidade, registre a detecção como **1** (vulnerável) do JSON – Verifique se o tipo de vulnerabilidade identificada foi a categoria correta. Se o LLM descrever a vulnerabilidade em texto livre (sem JSON), tente identificar a categoria principal mencionada no texto.
-    - Mantenha o registro neste template dos IDs dos arquivos, as detecções (0 ou 1), e a **categoria da vulnerabilidade identificada pelo LLM**. Isso é crucial para a próxima etapa.
-
-    f.  **Repita:** Repita os passos de `a` a `e` para todos os 15 arquivos do dataset e para ambos os modelos LLM (DeepSeek-Coder:1.3b e CodeLlama:7b).
-
-    g.  **Crie o `llm_detections_results.csv` manual:**
-        Após coletar todas as detecções e categorias no template, salve o arquivo preenchido como `/results/llm_detections_results.csv`.
-        As colunas `*_Raw_Result` conterão a resposta bruta do LLM e `*_Time` pode ser 0.0, a menos que você as cronometre manualmente.
-
+  ```bash
+    make test-llm
+   ```
+ **Registre a Detecção e a Categoria Identificada:**
+ Para facilitar o registro, utilize o template de planilha fornecido em `dataset/templates/llm_detections_manual_template.csv`.
+ - Se a resposta do LLM for `Código seguro`, registre a detecção como **0** (não vulnerável) e a categoria como `N/A`.
+ - Se a resposta for um JSON com detalhes da vulnerabilidade, registre a 
 
 2.  **Cálculo do Recall Contextual `(validate_contextual_recall.py)`**:
 
 Com o arquivo `results/llm_detections_results.csv` gerado (automaticamente ou manualmente), execute o script `validate_contextual_recall.py`. Este script calculará o recall dos LLMs especificamente para as vulnerabilidades contextuais.
 
 ```Bash
-python scripts/validate_contextual_recall.py
+make validate
 ```
 
 - Tempo esperado: Menos de 10 segundos.
@@ -276,49 +176,47 @@ Saída Esperada no terminal:
 Onde XY é o número de amostras contextuais, Y.Y% e X.X% são os recalls calculados para DeepSeek e CodeLlama, e X será 1 ou 0, 1 vulnerabilidade identificada e categoria correta, 0 vulnerabilidade não identificada ou categoria incorreta.
 
 
-### Reivindicação \#2: Execução SAST completa via GitHub Actions
+### Reivindicação \#2: Execução SAST 
 
-Este processo demonstra como as análises SAST foram integradas e executadas no ambiente de CI/CD (GitHub Actions) sobre o repositório completo do OWASP Juice Shop.
+Execute
 
-1.  **Faça um fork do repositório oficial do OWASP Juice Shop**:
+```bash
+make test-sast
+```
 
-      * Acesse `https://github.com/juice-shop/juice-shop`
-      * Clique em "Fork" no canto superior direito para criar uma cópia em sua conta.
+Verifique a saída no terminal e na pasta `/results/`
 
-2.  **Adicione os workflows SAST ao seu fork**:
+- semgrep_results.json
+- semgrep_results.sarif
+- sonarqube.issues.json
 
-      * No seu **fork** do repositório `juice-shop`, navegue até o diretório `.github/workflows`.
-      * Se não existir, crie esta pasta.
-      * Copie o conteúdo dos arquivos `semgrep.yml` e `sonarqube.yml` deste projeto (localizados em `.github/workflows/`) para a pasta `.github/workflows/` no seu fork. Estes workflows já estão configurados para analisar apenas os 15 arquivos de código-source do dataset, garantindo que a validação se concentre nas vulnerabilidades relevantes para este estudo.
 
-3.  **Configure os Secrets do GitHub (APENAS PARA SONARQUBE)**:
+## Interface de Comandos Simplificada
 
-      * Para o workflow do SonarQube funcionar, você precisa configurar os segredos no seu fork do GitHub.
-      * No seu fork, vá em **Settings \> Secrets \> Actions \> New repository secret**.
-      * Adicione dois segredos:
-          * `SONAR_TOKEN`: Um token de autenticação gerado na sua instância SonarQube (ou SonarCloud).
-          * `SONAR_HOST_URL`: A URL da sua instância SonarQube (ex: `https://sonarcloud.io` ou `http://localhost:9000`).
-      * Se encontrar problemas, consulte a [documentação de integração do SonarQube com GitHub Actions](https://docs.sonarqube.org/latest/analysis/github-integration/).
+Use o `Makefile` para comandos mais simples:
 
-4.  **Execute os workflows**:
+```bash
+# Setup completo (recomendado para iniciantes)
+make quick-start
 
-      * No seu fork do `juice-shop` no GitHub, vá para a aba **Actions**.
-      * No painel lateral esquerdo, selecione os workflows:
-          * **Semgrep PR** (nome definido no `semgrep.yml`): Clique em "Run workflow" e selecione o branch principal (ou o branch que você adicionou os arquivos `.yml`).
-          * **Sonar** (nome definido no `sonarqube.yml`): Clique em "Run workflow" e selecione o branch principal (ou o branch que você adicionou os arquivos `.yml`).
+# Comandos individuais
+make test-minimal    # Teste rápido (2 min) - gera Tabela 2
+make test-llm        # Análise com IA (30-80 min)
+make test-sast       # Ferramentas profissionais (5-10 min)
 
-5.  **Obtenha os resultados**:
+# Gerenciamento
+make logs           # Ver logs em tempo real
+make shell          # Acessar terminal interno
 
-      * **Semgrep**: Após a execução bem-sucedida do workflow "Semgrep PR", um novo Pull Request será criado automaticamente em seu fork com o relatório de segurança do Semgrep. Acesse o PR para visualizar o relatório detalhado em Markdown. Busque por detecções relacionadas a XSS (cross-site-scripting) e SQL Injection (sql-injection) para verificar a precisão da ferramenta.
-      * **SonarQube**: Após a execução bem-sucedida do workflow "Sonar", os resultados da análise serão enviados para a instância SonarQube configurada. Acesse a interface web da sua instância SonarQube (ex: `https://sonarcloud.io` ou sua URL local) e navegue até o projeto correspondente ao seu fork do Juice Shop para visualizar os alertas de segurança. Filtre por vulnerabilidades de segurança e inspecione as detecções de XSS e SQL Injection para confirmar a alta precisão da ferramenta nestas categorias.
-      *  Verifique se o tipo de vulnerabilidade identificada foi a categoria correta.
-      
+# Solução de problemas
+make reinit-models  # Se os modelos LLM falharem
+make restart-sonarqube # Se o SonarQube travar
+make clean          # Limpar tudo e recomeçar
 
-> **Notas importantes**:
->
->   * O tempo de execução varia: o Semgrep geralmente leva 2-5 minutos, enquanto o SonarQube pode levar de 5-15 minutos para concluir a análise e enviar os resultados.
->   * A execução em GitHub Actions utiliza recursos do próprio GitHub; não há consumo de recursos locais para o avaliador.
-
+# Validação
+make validate-env   # 86 verificações do ambiente
+make validate       # Validação completa
+```
 
 ## LICENSE
 
