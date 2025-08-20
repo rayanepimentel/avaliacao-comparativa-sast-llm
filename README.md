@@ -193,6 +193,12 @@ Verifique a saída no terminal e na pasta `/results/`
 - semgrep_results.sarif
 - sonarqube.issues.json
 
+Compare os resultados com a Tabela 2 do artigo.
+
+- **Semgrep**: Busque por detecções relacionadas a XSS (cross-site-scripting) e SQL Injection (sql-injection) para verificar a precisão da ferramenta.
+- **SonarQube**: Filtre por vulnerabilidades de segurança e inspecione as detecções de XSS e SQL Injection.
+
+
 
 ## Interface de Comandos Simplificada
 
