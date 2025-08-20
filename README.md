@@ -86,11 +86,11 @@ cd avaliacao-comparativa-sast-llm
 ```bash
 make quick-start
 ```
-
+A execução do `make quick-start` pode levar de 15 a 40 minutos, pois inclui o download dos modelos de linguagem.
 
 ## Teste Mínimo
 
-Ao rodar make quick-start, será gerado o teste mímino.
+Ao rodar `make quick-start`, será gerado o teste mímino.
 
 **Saída esperada no terminal (similar à Tabela 2 do artigo):**
 
@@ -126,7 +126,7 @@ Para validar que o artefato foi corretamente instalado e executado:
 Esta seção descreve os passos para reproduzir os resultados apresentados no artigo.
 
 
-### Reivindicação #1: Recall de LLMs em Vulnerabilidades Contextuais
+### Reivindicação \#1: Recall de LLMs em Vulnerabilidades Contextuais
 
 **Objetivo**: Validar que os modelos DeepSeek e CodeLlama alcançam alto recall em ameaças complexas e contextuais (como NoSQLi e Broken Access Control), compreendendo a natureza de suas detecções e a variabilidade inerente a modelos generativos.
 
@@ -139,7 +139,10 @@ Este processo é dividido em duas etapas e deve ser executado na sequência:
     make test-llm
    ```
  **Registre a Detecção e a Categoria Identificada:**
- Para facilitar o registro, utilize o template de planilha fornecido em `dataset/templates/llm_detections_manual_template.csv`.
+ O script `run_llm_analysis.py` gera automaticamente o arquivo `results/llm_detections_results.csv`. 
+ 
+ Caso queira revisar ou preencher os dados manualmente, utilize o template de planilha fornecido em `dataset/templates/llm_detections_manual_template.csv`.
+
  - Se a resposta do LLM for `Código seguro`, registre a detecção como **0** (não vulnerável) e a categoria como `N/A`.
  - Se a resposta for um JSON com detalhes da vulnerabilidade, registre a 
 
@@ -173,7 +176,7 @@ Saída Esperada no terminal:
 | VULN-10  | Validação insuficiente    | X                 | X                  |
 
 
-Onde XY é o número de amostras contextuais, Y.Y% e X.X% são os recalls calculados para DeepSeek e CodeLlama, e X será 1 ou 0, 1 vulnerabilidade identificada e categoria correta, 0 vulnerabilidade não identificada ou categoria incorreta.
+Onde XY é o número de amostras contextuais, Y.Y% e X.X% são os recalls calculados para DeepSeek e CodeLlama, e X na tabela será 1 ou 0, indicando se o LLM detectou uma vulnerabilidade (1) ou não (0) naquela amostra.
 
 
 ### Reivindicação \#2: Execução SAST 
