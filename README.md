@@ -94,7 +94,7 @@ Ao rodar `make quick-start`, será gerado o teste mímino.
 
 **Saída esperada no terminal (similar à Tabela 2 do artigo):**
 
-**Tabela 2. Comparação de Métricas entre Ferramentas de Análise de Segurança**
+### Tabela 2. Comparação de Métricas entre Ferramentas de Análise de Segurança*
 
 | Ferramenta | Precisão | Recall | F1-Score | FP Rate | VP | FP | FN |
 |------------|----------|--------|----------|---------|----|----|----|
@@ -193,7 +193,7 @@ Verifique a saída no terminal e na pasta `/results/`
 - semgrep_results.sarif
 - sonarqube.issues.json
 
-Compare os resultados com a Tabela 2 do artigo.
+Compare os resultados com a [Tabela 2](#tabela-2-comparação-de-métricas-entre-ferramentas-de-análise-de-segurança) do artigo 
 
 - **Semgrep**: Busque por detecções relacionadas a XSS (cross-site-scripting) e SQL Injection (sql-injection) para verificar a precisão da ferramenta.
 - **SonarQube**: Filtre por vulnerabilidades de segurança e inspecione as detecções de XSS e SQL Injection.
