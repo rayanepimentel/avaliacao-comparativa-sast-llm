@@ -5,7 +5,7 @@
 
 **Resumo do Artefato:** Este artefato implementa uma comparação sistemática do desempenho de inteligências artificiais generativas e ferramentas tradicionais na análise de código-fonte JavaScript. Ele permite a replicação dos experimentos que avaliaram ferramentas SAST (Semgrep/SonarQube) e modelos Large Language Models (LLMs) como DeepSeek e CodeLlama na detecção de vulnerabilidades JavaScript utilizando o OWASP Juice Shop como dataset. O estudo revela que as ferramentas SAST alcançam 100% de precisão para vulnerabilidades padrão (XSS/SQLi) , enquanto os LLMs oferecem maior recall (70% no DeepSeek) para ameaças contextuais (NoSQLi/controle de acesso quebrado), demonstrando a complementaridade entre as abordagens.
 
-[O artigo completo está disponível aqui:]()https://sol.sbc.org.br/index.php/sbseg_estendido/article/view/36756)
+[O artigo completo está disponível aqui](https://sol.sbc.org.br/index.php/sbseg_estendido/article/view/36756)
 
 ## Estrutura do readme.md
 
